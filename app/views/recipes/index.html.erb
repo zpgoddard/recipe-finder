@@ -24,6 +24,11 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+        .no-results {
+            color: red;
+            font-weight: bold;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -32,6 +37,7 @@
     <button onclick="searchRecipes()">Find Recipes</button>
     <div id="spinner" class="spinner"></div>
     <div id="recipes"></div>
+    <div id="no-results" class="no-results" style="display: none;">No recipes found for the given ingredients.</div>
 
     <script>
         function convertImageUrl(originalUrl) {
@@ -42,15 +48,21 @@
             if (urlParam && urlParam[1]) {
                 return decodeURIComponent(urlParam[1]);
             }
-            // Return the original URL if no conversion is needed
             return originalUrl;
         }
 
         async function searchRecipes() {
-            const ingredients = document.getElementById('ingredients').value;
+            const ingredients = document.getElementById('ingredients').value.trim();
+            if (ingredients.length < 3) {
+                alert('Please enter at least 3 characters.');
+                return;
+            }
+
             const searchTerms = ingredients.split(',').map(term => term.trim().toLowerCase());
             const spinner = document.getElementById('spinner');
+            const noResults = document.getElementById('no-results');
             spinner.style.display = 'block';
+            noResults.style.display = 'none';
 
             const response = await fetch('<%= url_for(controller: 'recipes', action: 'search', only_path: true) %>?ingredients=' + encodeURIComponent(ingredients));
             const recipes = await response.json();
@@ -60,15 +72,20 @@
             const recipesContainer = document.getElementById('recipes');
             recipesContainer.innerHTML = '';
 
+            if (recipes.length === 0) {
+                noResults.style.display = 'block';
+                return;
+            }
+
             recipes.forEach(recipe => {
                 const recipeDiv = document.createElement('div');
                 recipeDiv.className = 'recipe';
                 const ingredientsList = recipe.ingredients.map(ingredient => {
                     const ingredientName = ingredient.name.toLowerCase();
-                    const isMatch = searchTerms.some(term => ingredientName.includes(term));
-                    return `<li class="${isMatch ? 'highlight' : ''}">${ingredient.name}</li>`;
+                    const isExactMatch = searchTerms.includes(ingredientName);
+                    const className = isExactMatch ? 'highlight' : '';
+                    return `<li class="${className}">${ingredient.name}</li>`;
                 }).join('');
-                console.log(recipe.image_url);
                 const imageUrl = convertImageUrl(recipe.image_url);
                 recipeDiv.innerHTML = `
                     <h2>${recipe.title}</h2>

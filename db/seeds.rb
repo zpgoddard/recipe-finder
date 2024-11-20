@@ -14,7 +14,9 @@ file = File.read('recipes-en.json')
 recipes = JSON.parse(file)
 
 # Create records
-recipes.each do |recipe_data|
+recipes.each_with_index do |recipe_data, i|
+  puts "Creating Entry #{i + 1}..."
+
   encoded_image_url = recipe_data["image"]
   decoded_image_url = CGI.unescape(encoded_image_url)
 
@@ -26,7 +28,7 @@ recipes.each do |recipe_data|
     cuisine: recipe_data["cuisine"],
     category: recipe_data["category"],
     author: recipe_data["author"],
-    image_url: decoded_image_url
+    image_url: decoded_image_url # image_url string is requires decoding.
   )
 
   recipe_data["ingredients"].each do |ingredient_name|
