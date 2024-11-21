@@ -3,14 +3,11 @@ class RecipesController < ApplicationController
   end
 
   def search
-    search_terms = params[:ingredients].split(",").map(&:strip)
-    matching_ingredients = []
+    search_terms = params[:ingredients].split(",").map(&:strip).map(&:downcase)
+    like_conditions = search_terms.map { |term| "LOWER(name) LIKE ?" }.join(" OR ")
+    like_values = search_terms.map { |term| "%#{term}%" }
 
-    search_terms.each do |term|
-      matching_ingredients += Ingredient.where("name LIKE ?", "%#{term}%")
-    end
-
-    matching_ingredients.uniq!
+    matching_ingredients = Ingredient.where(like_conditions, *like_values)
 
     recipe_matches = Recipe.joins(:recipe_ingredients)
                            .where(recipe_ingredients: { ingredient_id: matching_ingredients.pluck(:id) })
@@ -19,7 +16,21 @@ class RecipesController < ApplicationController
                            .group("recipes.id")
                            .having("COUNT(recipe_ingredients.ingredient_id) > 0")
                            .order("match_percentage DESC")
+                           .page(params[:page]).per(50) # Paigination via Kaminari gem
 
-    render json: recipe_matches.as_json(include: { ingredients: { only: :name } }, methods: :image_url)
+    render json: recipe_matches.as_json(include: { recipe_ingredients: { only: [ :amount, :measurement ], methods: :ingredient_name } }, methods: :image_url)
+  end
+end
+
+class RecipeIngredient < ApplicationRecord
+  belongs_to :recipe
+  belongs_to :ingredient
+
+  def ingredient_name
+    ingredient.name
+  end
+
+  def as_json(options = {})
+    super(options.merge(methods: :ingredient_name))
   end
 end

@@ -6,11 +6,24 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; }
+        :root {
+            --primary-color: #B56CFF;
+            --secondary-color: #393349;
+            --accent-color: #FFE49D;
+            --background-color: #17102A;
+            --text-color: #E9E8EB;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
         input { width: 300px; padding: 10px; margin-right: 10px; }
         button { padding: 10px 15px; }
         .recipe { margin: 20px 0; }
         .highlight { color: green; font-weight: bold; }
+        .partial-match { color: orange; font-weight: bold; }
         .spinner {
             display: none;
             border: 4px solid rgba(0, 0, 0, 0.1);
@@ -40,18 +53,11 @@
     <div id="no-results" class="no-results" style="display: none;">No recipes found for the given ingredients.</div>
 
     <script>
-        function convertImageUrl(originalUrl) {
-            if (!originalUrl) {
-                return originalUrl;
-            }
-            const urlParam = originalUrl.match(/url=(.+)$/);
-            if (urlParam && urlParam[1]) {
-                return decodeURIComponent(urlParam[1]);
-            }
-            return originalUrl;
-        }
+        let currentPage = 1;
+        let loading = false;
 
         async function searchRecipes() {
+            currentPage = 1;
             const ingredients = document.getElementById('ingredients').value.trim();
             if (ingredients.length < 3) {
                 alert('Please enter at least 3 characters.');
@@ -64,29 +70,82 @@
             spinner.style.display = 'block';
             noResults.style.display = 'none';
 
-            const response = await fetch('<%= url_for(controller: 'recipes', action: 'search', only_path: true) %>?ingredients=' + encodeURIComponent(ingredients));
-            const recipes = await response.json();
+            try {
+                const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(ingredients)}&page=${currentPage}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const recipes = await response.json();
 
-            spinner.style.display = 'none';
+                spinner.style.display = 'none';
 
-            const recipesContainer = document.getElementById('recipes');
-            recipesContainer.innerHTML = '';
+                const recipesContainer = document.getElementById('recipes');
+                recipesContainer.innerHTML = '';
 
-            if (recipes.length === 0) {
+                if (!Array.isArray(recipes) || recipes.length === 0) {
+                    noResults.style.display = 'block';
+                    return;
+                }
+
+                appendRecipes(recipes, searchTerms);
+            } catch (error) {
+                console.error('Error fetching recipes:', error);
+                spinner.style.display = 'none';
                 noResults.style.display = 'block';
-                return;
             }
+        }
 
+        async function loadMoreRecipes() {
+            if (loading) return;
+            loading = true;
+            currentPage++;
+            const ingredients = document.getElementById('ingredients').value.trim();
+            const spinner = document.getElementById('spinner');
+            spinner.style.display = 'block';
+
+            try {
+                const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(ingredients)}&page=${currentPage}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const recipes = await response.json();
+
+                spinner.style.display = 'none';
+
+                if (!Array.isArray(recipes) || recipes.length === 0) {
+                    return;
+                }
+
+                const searchTerms = ingredients.split(',').map(term => term.trim().toLowerCase());
+                appendRecipes(recipes, searchTerms);
+            } catch (error) {
+                console.error('Error fetching recipes:', error);
+                spinner.style.display = 'none';
+            } finally {
+                loading = false;
+            }
+        }
+
+        function appendRecipes(recipes, searchTerms) {
+            const recipesContainer = document.getElementById('recipes');
             recipes.forEach(recipe => {
                 const recipeDiv = document.createElement('div');
                 recipeDiv.className = 'recipe';
-                const ingredientsList = recipe.ingredients.map(ingredient => {
-                    const ingredientName = ingredient.name.toLowerCase();
-                    const isExactMatch = searchTerms.includes(ingredientName);
-                    const className = isExactMatch ? 'highlight' : '';
-                    return `<li class="${className}">${ingredient.name}</li>`;
+                const ingredientsList = recipe.recipe_ingredients.map(recipe_ingredient => {
+                    const ingredientName = recipe_ingredient.ingredient_name.toLowerCase();
+                    let isExactMatch = searchTerms.includes(ingredientName);
+                    let isPartialMatch = false;
+                    searchTerms.forEach(element => {
+                        if (element.includes(ingredientName) || ingredientName.includes(element)) {
+                            isPartialMatch = true;
+                        }
+                    });
+                    const className = isExactMatch ? 'highlight' : (isPartialMatch ? 'partial-match' : '');
+                    const amount = recipe_ingredient.amount ? recipe_ingredient.amount + ' ' : '';
+                    const measurement = recipe_ingredient.measurement ? recipe_ingredient.measurement + ' ' : '';
+                    return `<li class="${className}">${amount}${measurement}${ingredientName}</li>`;
                 }).join('');
-                const imageUrl = convertImageUrl(recipe.image_url);
+                const imageUrl = recipe.image_url;
                 recipeDiv.innerHTML = `
                     <h2>${recipe.title}</h2>
                     <p><strong>Prep Time:</strong> ${recipe.prep_time} mins</p>
@@ -99,6 +158,12 @@
                 recipesContainer.appendChild(recipeDiv);
             });
         }
+
+        window.addEventListener('scroll', () => {
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
+                loadMoreRecipes();
+            }
+        });
     </script>
 </body>
 </html>
