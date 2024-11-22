@@ -22,3 +22,7 @@ queue:
 cable:
   <<: *default
   database: myapp_cable_production
+
+cache:
+  <<: *default
+  database: myapp_cache_production
