@@ -1,12 +1,14 @@
 class RecipesController < ApplicationController
+  RECIPES_TO_FETCH = 50 # Number of recipes to fetch per page
+
   def index
   end
 
   def search
     if params[:ingredients].present?
-      search_terms = params[:ingredients].split(",").map(&:strip).map(&:downcase)
-      like_conditions = search_terms.map { |term| "LOWER(name) LIKE ?" }.join(" OR ")
-      like_values = search_terms.map { |term| "%#{term}%" }
+      search_terms = params[:ingredients].split(",").map(&:strip).map(&:downcase) # Takes ingredients string query and splits it into array of individual search terms
+      like_conditions = search_terms.map { |term| "LOWER(name) LIKE ?" }.join(" OR ") # SQL query to search for ingredients that match the search terms
+      like_values = search_terms.map { |term| "%#{term}%" } # Values to be inserted into the SQL query
 
       matching_ingredients = Ingredient.where(like_conditions, *like_values)
 
@@ -17,7 +19,7 @@ class RecipesController < ApplicationController
                              .group("recipes.id")
                              .having("COUNT(recipe_ingredients.ingredient_id) > 0")
                              .order("match_percentage DESC")
-                             .page(params[:page]).per(50) # Pagination via Kaminari gem
+                             .page(params[:page]).per(RECIPES_TO_FETCH) # Pagination via Kaminari gem
 
       render json: recipe_matches.as_json(include: { recipe_ingredients: { only: [ :amount, :measurement ], methods: :ingredient_name } }, methods: :image_url)
     else

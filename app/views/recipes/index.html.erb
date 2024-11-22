@@ -14,7 +14,7 @@
             --text-color: #E9E8EB;
         }
         body {
-            font-family: Arial, sans-serif;
+            font-family: system-ui, sans-serif;
             padding: 20px;
             background-color: var(--background-color);
             color: var(--text-color);
@@ -46,6 +46,7 @@
             color: var(--text-color);
             border: none;
             border-radius: 5px;
+            cursor: pointer;
         }
         .add-button{
             position: absolute;
@@ -57,11 +58,13 @@
             align-items: center;
             aspect-ratio: 1;
             font-size: 200%;
+            cursor: pointer;
         }
         .find-recipes-button{
             padding: 10px 15px; 
             font-weight: bold;
             font-size: 18px;
+            cursor: pointer;
         }
         .my-ingredients-row {
             display: flex;
@@ -94,7 +97,8 @@
             cursor: pointer;
             min-width: 80px;
             text-align: center;
-            font-size: 16px;
+            font-size: 18px;
+            font-family: arial;
         }
         .highlight { color: green; font-weight: bold; }
         .partial-match { color: orange; font-weight: bold; }
@@ -337,7 +341,7 @@
         <h1>Recipe Finder</h1>
         <div id="inputs-row" class="inputs-row">
             <div id=input-wrapper class="input-wrapper">
-                <input id="ingredients" type="text" placeholder="Add ingridient...">
+                <input id="ingredients" type="text" placeholder="Add ingredient...">
                 <button id="add-button" class="add-button" onclick="addIngredient()">+</button>
             </div>
             <button id="find-recipes-button" class="find-recipes-button" onclick="searchRecipes()">Find Recipes</button>
@@ -395,7 +399,6 @@
 
         async function searchRecipes() {
             currentPage = 1;
-            const searchTerms = myIngredients.map(term => term.trim().toLowerCase());
             const spinner = document.getElementById('spinner');
             const noResults = document.getElementById('no-results');
             spinner.style.display = 'block';
@@ -418,7 +421,7 @@
                     return;
                 }
 
-                appendRecipes(recipes, searchTerms);
+                appendRecipes(recipes, myIngredients);
             } catch (error) {
                 console.error('Error fetching recipes:', error);
                 spinner.style.display = 'none';
@@ -465,16 +468,16 @@
 
         let selectedRecipeWrapper = null;
 
-        function appendRecipes(recipes, searchTerms) {
+        function appendRecipes(recipes, myIngredients) {
             const recipesContainer = document.getElementById('recipes');
             recipes.forEach(recipe => {
                 const recipeDiv = document.createElement('div');
                 recipeDiv.className = 'recipe';
                 const ingredientsList = recipe.recipe_ingredients.map(recipe_ingredient => {
                     const ingredientName = recipe_ingredient.ingredient_name.toLowerCase();
-                    let isExactMatch = searchTerms.includes(ingredientName);
+                    let isExactMatch = myIngredients.includes(ingredientName);
                     let isPartialMatch = false;
-                    searchTerms.forEach(element => {
+                    myIngredients.forEach(element => {
                         if (element.includes(ingredientName) || ingredientName.includes(element)) {
                             isPartialMatch = true;
                         }
@@ -590,7 +593,7 @@
                         <div id="recipe-panel-ingredients" class="recipe-panel-ingredients">
                             <div> <strong> INGREDIENTS </strong> </div>
                             ${recipe.recipe_ingredients.map(ingredient => `
-                                <li id="ingridient" class="ingridient">${ingredient.amount ? ingredient.amount : ""}${ingredient.measurement ? " " + ingredient.measurement : ""} ${ingredient.ingredient_name}</li>
+                                <li id="ingredient" class="ingredient">${ingredient.amount ? ingredient.amount : ""}${ingredient.measurement ? " " + ingredient.measurement : ""} ${ingredient.ingredient_name}</li>
                              `).join('')}
                         </div>
                     `
