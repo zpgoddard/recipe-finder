@@ -15,6 +15,10 @@ production:
   <<: *default
   url: <%= ENV['DATABASE_URL'] %>
 
+queue:
+  <<: *default
+  database: myapp_queue_production
+
 cable:
   <<: *default
   database: myapp_cable_production
