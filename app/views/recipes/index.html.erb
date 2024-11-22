@@ -155,6 +155,7 @@
             background: var(--secondary-color);
             width: 33%;
             position: relative;
+            border-radius: 10px;
         }
 
         .recipe-wrapper {
@@ -251,26 +252,71 @@
             display: flex;
             flex-direction: row;
             height: 150px;
+            padding: 20px;
         }
         .recipe-panel-img {
-            height: 100px;
-            width: 100px;
+            height: 150px;
+            width: 150px;
             overflow: hidden;
             border-radius: 10px;
         }
         .recipe-panel-header-info{
-            width: 100%;
+            width: calc(100% - 150px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            padding: 0px 15px 0px 15px;
         }
         .recipe-panel-title{
             text-align: center;
+            font-weight: 900;
+            font-size: 24px;
         }
         .recipe-panel-author{
             text-align: center;
+            font-size: 20px;
+            font-style: italic;
+             color: grey;
         }
         .recipe-panel-other-info{
             display: flex;
             flex-direction: row;
             justify-content: space-between;
+            font-size: 20px;
+        }
+        .recipe-panel-prep-time{
+            margin-bottom: 5px;
+        }
+        .recipe-panel-ratings-wrapper{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 7px;
+            font-size: 16px;
+            font-style: italic;
+        }
+        .recipe-rating-text {
+            font-weight: 500;
+            font-style: italic;
+        }
+        .recipe-panel-ingredients{
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 18px;
+            list-style-type: none;
+        }
+        .recipe-box-helper-text {
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: grey;
+            font-style: italic;
         }
     </style>
 </head>
@@ -292,7 +338,9 @@
             <div id="recipes"></div>
             <div id="no-results" class="no-results" style="display: none;">No recipes found for the given ingredients.</div>
         </div>
-        <div id="recipe-box" class="recipe-box"></div>
+        <div id="recipe-box" class="recipe-box">
+            <div id="recipe-box-helper-text" class="recipe-box-helper-text"> Please select a recipe </div>
+        </div>
     </div>
 
     <script>
@@ -371,12 +419,12 @@
             if (loading) return;
             loading = true;
             currentPage++;
-            const ingredients = document.getElementById('ingredients').value.trim();
+            const ingredients = myIngredients.map(term => term.trim().toLowerCase());
             const spinner = document.getElementById('spinner');
             spinner.style.display = 'block';
 
             try {
-                const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(ingredients)}&page=${currentPage}`);
+                const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(myIngredients.join(","))}&page=${currentPage}`);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -388,8 +436,7 @@
                     return;
                 }
 
-                const searchTerms = ingredients.split(',').map(term => term.trim().toLowerCase());
-                appendRecipes(recipes, searchTerms);
+                appendRecipes(recipes, ingredients);
             } catch (error) {
                 console.error('Error fetching recipes:', error);
                 spinner.style.display = 'none';
@@ -485,7 +532,7 @@
                                         ${recipe.title}
                                     </div>
                                     <div id="recipe-panel-author" class="recipe-panel-author">
-                                        ${recipe.author}
+                                        By ${recipe.author}
                                     </div>
                                 </div>
                                 <div id="recipe-panel-other-info" class="recipe-panel-other-info">
@@ -499,23 +546,23 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="recipe-panel-wrapper" class="recipe-panel-ratings-wrapper">
+                                    <div id="recipe-panel-ratings-wrapper" class="recipe-panel-ratings-wrapper">
                                         <div id="recipe-panel-stars" class="recipe-panel-stars">
                                             ${[...Array(5)].map((_, i) => {
                                                 if (i < fullStars) {
                                                     return `
-                                                        <div class="recipe-panel-circle">
-                                                            <div class="recipe-panel-circle-filled" style="width: 100%;"></div>
+                                                        <div class="recipe-circle">
+                                                            <div class="recipe-circle-filled" style="width: 100%;"></div>
                                                         </div>`;
                                                 } else if (i === fullStars) {
                                                     return `
-                                                        <div class="recipe-panel-circle">
-                                                            <div class="recipe-panel-circle-filled" style="width: ${partialStar}%;"></div>
+                                                        <div class="recipe-circle">
+                                                            <div class="recipe-circle-filled" style="width: ${partialStar}%;"></div>
                                                         </div>`;
                                                 } else {
                                                     return `
-                                                        <div class="recipe-panel-circle">
-                                                            <div class="recipe-panel-circle-filled" style="width: 0%;"></div>
+                                                        <div class="recipe-circle">
+                                                            <div class="recipe-circle-filled" style="width: 0%;"></div>
                                                         </div>`;
                                                 }
                                             }).join('')}
@@ -526,6 +573,12 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        <div id="recipe-panel-ingredients" class="recipe-panel-ingredients">
+                            <div> <strong> INGREDIENTS </strong> </div>
+                            ${recipe.recipe_ingredients.map(ingredient => `
+                                <li id="ingridient" class="ingridient">${ingredient.amount ? ingredient.amount : ""}${ingredient.measurement ? " " + ingredient.measurement : ""} ${ingredient.ingredient_name}</li>
+                             `).join('')}
                         </div>
                     `
                 });
