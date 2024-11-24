@@ -6,9 +6,9 @@ It's dinner time! Create an application that helps users find the most relevant 
 
 ## User Stories
 
-1. 
-2. 
-3. 
+1. As a user I am able to enter multiple ingredients that I currently have available to me.
+2. As a user I am able to search for recipes that are most relevant to the ingredients I have.
+3. As a user I am able to see a list of those recipes, and choose one to find more details about.
 
 ## Prerequisites
 
@@ -71,8 +71,7 @@ bundle exec rake assets:precompile
 2. Press Enter or click the "+" button to add it to your list of ingredients (ingredients must be at least 3 characters).
 3. Click on an ingredient to remove it from the list.
 4. Click the "Find Recipes" button to search for recipes that match your ingredients:
-   - Recipes with the highest match percentage appear first. For example:
-     - A 5/5 match is 100%, whereas a 4/5 match is 80%.
+   - Recipes with the highest match percentage appear first. For example: A 5/5 match is 100%, whereas a 4/5 match is 80%.
    - If multiple recipes have the same match percentage, they are ordered by the number of your ingredients they match with.
    - Remaining conflicts are resolved by the least number of missing ingredients.
 5. Click on a recipe to expand it and view more details; ingredients that match will be highlighted.
