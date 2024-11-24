@@ -69,11 +69,7 @@ const renderIngredients = () => {
 const searchRecipes = async() => {
   const ingredientInput = document.getElementById('ingredients');
   const ingredientValue = ingredientInput.value.trim();
-
-  // Check if the input field has a value and trigger the addIngredient function
-  if (ingredientValue.length >= 3) {
-    addIngredient();
-  }
+  if (ingredientValue.length >= 3) addIngredient(); // Check if the input field has a value and trigger the addIngredient function
 
   currentPage = 1; // Reset page number to 1
   const spinner = document.getElementById('spinner');
