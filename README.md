@@ -4,6 +4,7 @@ It's dinner time! Create an application that helps users find the most relevant 
 
 ## Deployed App
 
+### Link to Website
 [See it in action here!](https://recipe-finder-pennylane-beac36736783.herokuapp.com/)
 
 ### How to Use
