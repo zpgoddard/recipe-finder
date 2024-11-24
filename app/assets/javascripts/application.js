@@ -43,10 +43,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Function to add an ingredient to the list of user's ingredients
 const addIngredient = () => {
   const ingredientInput = document.getElementById('ingredients');
-  if (ingredientInput.value.trim().length < 3) {
+  const ingredient = ingredientInput.value.trim().toLowerCase();
+  if (ingredient.length < 3) {
     alert('Please enter at least 3 characters.'); // If ingridient is too short show alert and disallow adding
+  } else if (myIngredients.includes(ingredient)) {
+    alert(`${ingredient} already exists in your ingredients.`)
   } else {
-    myIngredients.push(ingredientInput.value.trim());
+    myIngredients.push(ingredient);
     ingredientInput.value = '';
     renderIngredients();
   }
