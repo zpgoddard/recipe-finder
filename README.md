@@ -75,3 +75,9 @@ bundle exec rake assets:precompile
    - If multiple recipes have the same match percentage, they are ordered by the number of your ingredients they match with.
    - Remaining conflicts are resolved by the least number of missing ingredients.
 5. Click on a recipe to expand it and view more details; ingredients that match will be highlighted.
+
+--
+
+## Read More
+
+Follow [this link](https://www.notion.so/Recipe-Finding-App-143d74cc76a480c09e84d17728ef2c78?showMoveTo=true&saveParent=true) to read about my approach to this challenge.
