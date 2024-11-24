@@ -2,7 +2,8 @@
 
 It's dinner time! Create an application that helps users find the most relevant recipes that they can prepare with the ingredients that they have at home.
 
----
+## Deployed App
+[See it in action here!](https://recipe-finder-pennylane-beac36736783.herokuapp.com/)
 
 ## User Stories
 
@@ -19,8 +20,6 @@ Before starting, ensure you have the following installed:
 - **Node.js**: `14.x.x`
 - **Yarn**: `1.x.x`
 - **PostgreSQL**: `12.x.x`
-
----
 
 ## Installation
 
@@ -43,8 +42,6 @@ rails db:migrate
 rails db:seed
 ```
 
----
-
 ## Running the Application
 
 Start the server with:
@@ -63,8 +60,6 @@ If needed, precompile the assets using:
 bundle exec rake assets:precompile
 ```
 
----
-
 ## How to Use
 
 1. Enter your ingredient into the input bar at the top of the screen.
@@ -75,8 +70,6 @@ bundle exec rake assets:precompile
    - If multiple recipes have the same match percentage, they are ordered by the number of your ingredients they match with.
    - Remaining conflicts are resolved by the least number of missing ingredients.
 5. Click on a recipe to expand it and view more details; ingredients that match will be highlighted.
-
---
 
 ## Read More
 
