@@ -47,7 +47,7 @@ const addIngredient = () => {
   if (ingredient.length < 3) {
     alert('Please enter at least 3 characters.'); // If ingridient is too short show alert and disallow adding
   } else if (myIngredients.includes(ingredient)) {
-    alert(`${ingredient} already exists in your ingredients.`)
+    alert(`${ingredient} already exists in your ingredients.`) // If ingredient already exists show alert and disallow adding
   } else {
     myIngredients.push(ingredient);
     ingredientInput.value = '';
