@@ -2,9 +2,8 @@ require_relative "boot"
 
 require "rails/all"
 
-# Require the gems listed in Gemfile, including any gems
-# you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
+Dotenv::Rails.load if defined?(Dotenv::Rails)
 
 module RecipeFinderDb
   class Application < Rails::Application

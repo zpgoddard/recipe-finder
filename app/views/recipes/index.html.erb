@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>Recipe Finder</title>
-    <link rel="stylesheet" href="styles/styles.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         :root {
@@ -407,6 +406,7 @@
                     throw new Error('Network response was not ok');
                 }
                 const recipes = await response.json();
+                console.log(recipes);
 
                 spinner.style.display = 'none';
 
