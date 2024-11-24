@@ -1,7 +1,7 @@
 class RecipesController < ApplicationController
   RECIPES_TO_FETCH = 50 # Number of recipes to fetch per page
 
-  # Used to render the index view
+  # Used to render the recipes/index view
   def index
   end
 

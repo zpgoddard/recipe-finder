@@ -1,74 +1,59 @@
-// This is a manifest file that'll be compiled into application.js, which will include all the files
-// listed below.
-//
-// Any JavaScript/Coffee file within this directory, lib/assets/javascripts, or any plugin's
-// vendor/assets/javascripts directory can be referenced here using a relative path.
-//
-// It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
-// compiled file. JavaScript code in this file should be added after the last require_* statement.
-//
-// Read Sprockets README (https://github.com/rails/sprockets#sprockets-directives) for details
-// about supported directives.
-//
 //= require rails-ujs
 //= require_tree .
 
-let currentPage = 1;
-let loading = false;
-let myIngredients = [];
-let selectedRecipeWrapper = null;
+let currentPage = 1; // Page number for paginated results
+let loading = false; // Flag to prevent multiple simultaneous requests and provide user feedback that data is loading
+let myIngredients = []; // Array to store user's ingredients
+let selectedRecipeWrapper = null; // Reference to the currently selected recipe wrapper, avoids duplicates
 
+// Add event listeners to the buttons and input fields
 document.addEventListener('DOMContentLoaded', function() {
   const addButton = document.getElementById('add-button');
   const findRecipesButton = document.getElementById('find-recipes-button');
   const ingredientsInput = document.getElementById('ingredients');
   const recipesListBox = document.getElementById('recipes-list-box');
 
-  if (addButton) {
-    addButton.addEventListener('click', addIngredient);
-  }
-  if (findRecipesButton) {
-    findRecipesButton.addEventListener('click', searchRecipes);
-  }
+  // Add event listener to the Add button to trigger the addIngredient function
+  if (addButton) addButton.addEventListener('click', addIngredient);
+
+  // Add event listener to the Find Recipes button to trigger the searchRecipes function
+  if (findRecipesButton) findRecipesButton.addEventListener('click', searchRecipes);
+
+  // Add event listener to the ingredients input field to detect when the user has pressed the Enter key
   if (ingredientsInput) {
     ingredientsInput.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter') {
-        addIngredient();
-      }
+      if (event.key === 'Enter') addIngredient();
     });
   }
+
+  // Add event listener to the recipes list box to detect when the user has scrolled to the bottom of the list
   if (recipesListBox) {
     recipesListBox.addEventListener('scroll', () => {
-      if (recipesListBox.scrollTop + recipesListBox.clientHeight >= recipesListBox.scrollHeight) {
-        loadMoreRecipes();
-      }
+      if (recipesListBox.scrollTop + recipesListBox.clientHeight >= recipesListBox.scrollHeight) loadMoreRecipes();
     });
   }
-  window.addEventListener('scroll', () => {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100) {
-      loadMoreRecipes();
-    }
-  });
 });
 
-function addIngredient() {
-  const ingredient = document.getElementById('ingredients').value.trim();
-  if (ingredient.length < 3) {
-    alert('Please enter at least 3 characters.');
-    return;
-  }
+// Function to add an ingredient to the list of user's ingredients
+const addIngredient = () => {
   const ingredientInput = document.getElementById('ingredients');
-  myIngredients.push(ingredient);
-  ingredientInput.value = '';
-  renderIngredients();
+  if (ingredientInput.value.trim().length < 3) {
+    alert('Please enter at least 3 characters.'); // If ingridient is too short show alert and disallow adding
+  } else {
+    myIngredients.push(ingredientInput.value.trim());
+    ingredientInput.value = '';
+    renderIngredients();
+  }
 }
 
-function removeIngredient(index) {
+// Function to remove an ingredient from the list of user's ingredients
+const removeIngredient = (index) => {
   myIngredients.splice(index, 1);
   renderIngredients();
 }
 
-function renderIngredients() {
+// Function to clear then re-render the list of user's ingredients
+const renderIngredients = () => {
   const ingredientsRow = document.getElementById('my-ingredients-row');
   ingredientsRow.innerHTML = '';
   myIngredients.forEach((ingredient, index) => {
@@ -80,8 +65,17 @@ function renderIngredients() {
   });
 }
 
-async function searchRecipes() {
-  currentPage = 1;
+// Function to search for recipes based on the user's ingredients
+const searchRecipes = async() => {
+  const ingredientInput = document.getElementById('ingredients');
+  const ingredientValue = ingredientInput.value.trim();
+
+  // Check if the input field has a value and trigger the addIngredient function
+  if (ingredientValue.length >= 3) {
+    addIngredient();
+  }
+
+  currentPage = 1; // Reset page number to 1
   const spinner = document.getElementById('spinner');
   const noResults = document.getElementById('no-results');
   const recipesListBox = document.getElementById('recipes');
@@ -90,74 +84,61 @@ async function searchRecipes() {
   recipesListBox.innerHTML = ''; // Clear previous results
 
   try {
-    const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(myIngredients.join(","))}&page=${currentPage}`);
+    const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(myIngredients.join(","))}&page=${currentPage}`); // Fetch recipes from the server
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }
     const recipes = await response.json();
+    // console.log(recipes);
 
     if (recipes.length === 0) {
-      noResults.style.display = 'block';
+      noResults.style.display = 'block'; // Display a message if no recipes are found
     } else {
-      appendRecipes(recipes, myIngredients);
+      appendRecipes(recipes, myIngredients); // Append the recipes to the recipes list
     }
   } catch (error) {
-    console.error('Error fetching recipes:', error);
+    console.error('Error fetching recipes:', error); // Log any errors to the console
     noResults.style.display = 'block';
   } finally {
     spinner.style.display = 'none';
   }
 }
 
-async function loadMoreRecipes() {
-  if (loading) return;
+// Function to load more recipes when the user scrolls to the bottom of the list
+// Due to paigination, we could reduce size of file by combining this function with searchRecipes in future.
+const loadMoreRecipes = async() => {
+  if (loading) return; // If data is already loading, do nothing
   loading = true;
   currentPage++;
   const spinner = document.getElementById('spinner');
   spinner.style.display = 'block';
 
   try {
-    const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(myIngredients.join(","))}&page=${currentPage}`);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
+    const response = await fetch(`/recipes/search?ingredients=${encodeURIComponent(myIngredients.join(","))}&page=${currentPage}`); // Fetch more recipes from the server
+    if (!response.ok) throw new Error('Network response was not ok');
     const recipes = await response.json();
-
-    if (recipes.length > 0) {
-      appendRecipes(recipes, myIngredients);
-    }
+    // console.log(recipes);
+    if (recipes.length > 0) appendRecipes(recipes, myIngredients);
   } catch (error) {
-    console.error('Error fetching more recipes:', error);
+    console.error('Error fetching more recipes:', error); // Log any errors to the console
   } finally {
     spinner.style.display = 'none';
     loading = false;
   }
 }
 
-function appendRecipes(recipes, myIngredients) {
+// Function to append recipes to the recipes list
+const appendRecipes = (recipes) => {
   const recipesContainer = document.getElementById('recipes');
-  recipes.forEach(recipe => {
+  recipes.forEach(recipe => { // Loop through each recipe and create a recipe div
     const recipeDiv = document.createElement('div');
     recipeDiv.className = 'recipe';
-    const ingredientsList = recipe.recipe_ingredients.map(recipe_ingredient => {
-      const ingredientName = recipe_ingredient.ingredient_name.toLowerCase();
-      let isExactMatch = myIngredients.includes(ingredientName);
-      let isPartialMatch = false;
-      myIngredients.forEach(element => {
-        if (element.includes(ingredientName) || ingredientName.includes(element)) {
-          isPartialMatch = true;
-        }
-      });
-      const className = isExactMatch ? 'highlight' : (isPartialMatch ? 'partial-match' : '');
-      const amount = recipe_ingredient.amount ? recipe_ingredient.amount + ' ' : '';
-      const measurement = recipe_ingredient.measurement ? recipe_ingredient.measurement + ' ' : '';
-      return `<li class="${className}">${amount}${measurement}${ingredientName}</li>`;
-    }).join('');
+
     const imageUrl = recipe.image_url;
+    const fullStars = Math.floor(recipe.ratings); // Calculate the number of full stars
+    const partialStar = (recipe.ratings - fullStars) * 100; // Calculate the percentage of the partial star by multiplying the reamaining decimal part of the rating by 100
 
-    const fullStars = Math.floor(recipe.ratings);
-    const partialStar = (recipe.ratings - fullStars) * 100;
-
+    // Create the recipe div with the recipe details
     recipeDiv.innerHTML = `
       <div id="recipe-wrapper" class="recipe-wrapper">
         <div style="display: flex;">
@@ -195,6 +176,7 @@ function appendRecipes(recipes, myIngredients) {
       </div>
     `;
 
+    // Add event listeners to the recipe div to display the recipe details when clicked
     recipeDiv.addEventListener('click', () => {
       const recipeBox = document.getElementById('recipe-box');
 
@@ -249,16 +231,17 @@ function appendRecipes(recipes, myIngredients) {
       `;
     });
 
+    // Add event listener to the recipe wrapper to highlight the selected recipe
     recipeDiv.querySelector('#recipe-wrapper').addEventListener('click', () => {
       if (selectedRecipeWrapper) {
-        selectedRecipeWrapper.classList.remove('recipe-wrapper-selected');
-        selectedRecipeWrapper.classList.add('recipe-wrapper');
+        selectedRecipeWrapper.classList.remove('recipe-wrapper-selected'); // Remove the selected class from the previously selected recipe
+        selectedRecipeWrapper.classList.add('recipe-wrapper'); // Add the default class to the previously selected recipe
       }
-      recipeDiv.querySelector('#recipe-wrapper').classList.remove('recipe-wrapper');
-      recipeDiv.querySelector('#recipe-wrapper').classList.add('recipe-wrapper-selected');
-      selectedRecipeWrapper = recipeDiv.querySelector('#recipe-wrapper');
+      recipeDiv.querySelector('#recipe-wrapper').classList.remove('recipe-wrapper'); // Remove the default class from the selected recipe
+      recipeDiv.querySelector('#recipe-wrapper').classList.add('recipe-wrapper-selected'); // Add the selected class to the selected
+      selectedRecipeWrapper = recipeDiv.querySelector('#recipe-wrapper'); // Update the reference to the selected recipe wrapper
     });
 
-    recipesContainer.appendChild(recipeDiv);
+    recipesContainer.appendChild(recipeDiv); // Append the recipe div to the recipes list
   });
 }

@@ -35,7 +35,7 @@ recipes.each_with_index do |recipe_data, i|
     ingredient = Ingredient.find_or_create_by(name: ingredient_name)
     RecipeIngredient.create(
       recipe: recipe, # This is the recipe record created above
-      ingredient: ingredient,
+      ingredient: ingredient, # This is the ingredient record created above
       amount: ingredient_data["amount"],
       measurement: ingredient_data["measurement"]
     )
