@@ -3,7 +3,19 @@
 It's dinner time! Create an application that helps users find the most relevant recipes that they can prepare with the ingredients that they have at home.
 
 ## Deployed App
+
 [See it in action here!](https://recipe-finder-pennylane-beac36736783.herokuapp.com/)
+
+### How to Use
+
+1. Enter your ingredient into the input bar at the top of the screen.
+2. Press Enter or click the "+" button to add it to your list of ingredients (ingredients must be at least 3 characters).
+3. Click on an ingredient to remove it from the list.
+4. Click the "Find Recipes" button to search for recipes that match your ingredients:
+   - Recipes with the highest match percentage appear first. For example: A 5/5 match is 100%, whereas a 4/5 match is 80%.
+   - If multiple recipes have the same match percentage, they are ordered by the number of your ingredients they match with.
+   - Remaining conflicts are resolved by the least number of missing ingredients.
+5. Click on a recipe to expand it and view more details; ingredients that match will be highlighted.
 
 ## User Stories
 
@@ -59,17 +71,6 @@ If needed, precompile the assets using:
 ```bash
 bundle exec rake assets:precompile
 ```
-
-## How to Use
-
-1. Enter your ingredient into the input bar at the top of the screen.
-2. Press Enter or click the "+" button to add it to your list of ingredients (ingredients must be at least 3 characters).
-3. Click on an ingredient to remove it from the list.
-4. Click the "Find Recipes" button to search for recipes that match your ingredients:
-   - Recipes with the highest match percentage appear first. For example: A 5/5 match is 100%, whereas a 4/5 match is 80%.
-   - If multiple recipes have the same match percentage, they are ordered by the number of your ingredients they match with.
-   - Remaining conflicts are resolved by the least number of missing ingredients.
-5. Click on a recipe to expand it and view more details; ingredients that match will be highlighted.
 
 ## Read More
 
