@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 ruby "3.3.6"
 
-gem "rails", "~> 8.0.0"
+gem "rails", "~> 8.0.1"
 gem "pg", ">= 0.18", "< 2.0"
 gem "puma", ">= 5.0"
 gem "kaminari"
